@@ -8,30 +8,25 @@ app = Flask(__name__)
 def index():
     return render_template('index.html')
 
-@app.route('/emotionDetector', methods=['GET', 'POST'])
+@app.route('/emotionDetector')
 def emotion_detection():
-    if request.method == 'POST':
-        # Parse the incoming data
-        data = request.json
-        input_text = data.get("text", "")
+    input_text = request.args.get("textToAnalyze", "")
 
-        if not input_text:
-            return jsonify({"error": "No text provided."}), 400
-
-    else:  # Handle GET request
-        input_text = request.args.get("textToAnalyze", "")
-
-        if not input_text:
-            return jsonify({"error": "No text provided."}), 400
+    # if input_text == "":
+    # return jsonify({"error": "No text provided."}), 400
 
     # Real emotion analysis (Replace mock with actual logic)
     detected_emotions = emotion_detector(input_text)
     try:
         emotion_scores = detected_emotions.get("emotion_scores", {})
         dominant_emotion = detected_emotions.get("highest_emotion", "unknown")
+        print(f"TEST: {dominant_emotion}")
         
         if not emotion_scores:
             raise ValueError("Invalid emotion scores")
+
+        if dominant_emotion == "None":
+            raise ValueError("Invalid text! Please try again!")
 
    
         # Prepare the response in the required format
@@ -44,7 +39,7 @@ def emotion_detection():
         
         return system_response
     except (TypeError, ValueError, KeyError) as e:
-        return f"Error processing emotion data: {str(e)}"
+        return f"Invalid text! Please try again!"
 
 if __name__ == '__main__':
     app.run(debug=True)
